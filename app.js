@@ -42,13 +42,15 @@ app.get('/mytest', auth, function () {
 //     console.log("middlewarer infff")
 // })
 app.get('/users/me', auth, function (req, res) {
+    console.log("ok from userme")
+
     res.send(req.user);
 })
 app.post("/login", async function (req, res) {
 
     const user = await Users.checkCrediantialsDb(req.body.username, req.body.password);
     const token = await user.generateAuthToken();
-    res.send({ success: true, token: token, usertype: user.usertype });
+    res.send({ success: true, token: token, usertype: user.usertype,userid:user._id });
 })
 
 app.get("/test99", auth, function (req, res) {
@@ -111,12 +113,11 @@ app.delete('/deletepost/:id', auth, function (req, res) {
         res.send(true)
     })
 })
-app.put('/like', auth, function (req, res) {
+app.put('/like/:id', auth, function (req, res) {
 
-    console.log(req.body.pid);
+    
 
-
-    Mypost.updateOne({ _id: req.body.pid }, { $inc: { likes: 1 } }, function (user) {
+    Mypost.updateOne({ _id: req.params.id }, { $inc: { likes: 1 } }, function (user) {
         console.log(user);
         res.send(true)
     })
@@ -126,7 +127,7 @@ app.put('/like', auth, function (req, res) {
 //crime scene
 
 app.get('/gettimeline', auth, function (req, res) {
-    console.log("ok")
+    console.log("ok from timeline")
     Mypost.find()
         .populate('userId', ['username', 'profile_image'])
         .exec()
@@ -194,22 +195,10 @@ app.get('/getpersonaltimeline', auth, function (req, res) {
         .exec()
         .then(function (postdata) {
             if (postdata) {
-                res.json({
-                    Post: postdata.map(doc => {
-                        return {
-                            _id: doc._id,
-                            postImage: doc.postImage,
-                            postDescription: doc.postDescription,
-                            location: doc.location,
-                            likes: doc.likes,
-                            comments: doc.comments,
-                            userId: doc.userId
-                        }
-                    })
-
-
-                })
+                res.json(postdata)
             }
+        }).catch(function (params) {
+            console.log(params)
         })
 
 
